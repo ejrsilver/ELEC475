@@ -6,6 +6,9 @@ class SnoutNet(nn.Module):
     def __init__(self):
         super(SnoutNet, self).__init__()
 
+        #input is three channels RBG, output is 64 channels, 3x3 kernel, need a stride of 4 to get 227x227 to 57x57
+        self.conv1 = nn.Conv2d(in_channels=3, out_channels=64, kernel_size=3, stride=1)
+        self.maxpool = nn.MaxPool2d(kernel_size=3, stride=4)
         #input is three channels RBG, output is 64 channels, 3x3 kernel, need a stride of 4 to get 227x227 to 57x57 with padding 2 
         self.conv1 = nn.Conv2d(in_channels=3, out_channels=64, kernel_size=3, stride=1, padding=2)
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=4)
@@ -55,4 +58,6 @@ class SnoutNet(nn.Module):
         X = self.fc3(X)
         print(X.shape)
 
-        return X
+            return X
+        
+        
