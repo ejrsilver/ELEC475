@@ -2,4 +2,5 @@ data
 MLP.8.pth
 __pycache__
 loss.MLP.8.png
+.DS_Store
 
