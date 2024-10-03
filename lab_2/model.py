@@ -32,32 +32,25 @@ class SnoutNet(nn.Module):
         X = self.conv1(X)
         X = self.maxpool(X)
         X = F.relu(X)
-        print(X.shape)
 
         X = self.conv2(X)
         X = self.maxpool(X)
         X = F.relu(X)
-        print(X.shape)
 
         X = self.conv3(X)
         X = self.maxpool(X)
         X = F.relu(X)
-        print(X.shape)
 
         X = X.view(1,4096)
-        print(X.shape)
         
         X = self.fc1(X)
         X = F.relu(X)
-        print(X.shape)
 
         X = self.fc2(X)
         X = F.relu(X)
-        print(X.shape)
 
         X = self.fc3(X)
-        print(X.shape)
 
-            return X
+        return X
         
         
