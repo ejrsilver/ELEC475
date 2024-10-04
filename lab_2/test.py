@@ -5,7 +5,7 @@
 #   Fall 2023
 #
 
-import torch, math
+import torch, math, statistics
 import torchvision.transforms as transforms
 import argparse
 import matplotlib.pyplot as plt
@@ -64,13 +64,15 @@ def main():
                 euclidean_distance = math.sqrt((outputs[idx][0] - labels[idx][0])**2 + (outputs[idx][1] - labels[idx][1])**2)
                 euclidean_distances.append(euclidean_distance)
 
-        min = min(euclidean_distances)
-        max = max(euclidean_distances)
-        mean = mean(euclidean_distances)
-        std = torch.std(torch.tensor(euclidean_distances))
+        minimum = min(euclidean_distances)
+        maximum = max(euclidean_distances)
+        average = statistics.mean(euclidean_distances)
+        std = torch.std(torch.tensor(euclidean_distances)).item()
 
-        print("Min: ", min, " Max: ", max, " Mean: ", mean, "Standard Deviation: ", std)
+        print("Min: ", minimum, " Max: ", maximum, " Mean: ", average, "Standard Deviation: ", std)
+
         
+    
 
 
 
