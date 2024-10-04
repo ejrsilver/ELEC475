@@ -1,4 +1,4 @@
-import torch
+import torch, math
 import torch.nn as nn
 import torch.optim as optim
 import torch.utils
@@ -19,7 +19,15 @@ batch_size = 1
 plot_file = 'plot.png'
 device = 'cpu'
 
-def train(n_epochs, optimizer, model, loss_fn, train_loader, scheduler, device, save_file=None, plot_file=None):
+
+def init_weights(m):
+    if type(m) == nn.Linear or type(m) == nn.Conv2d:
+        torch.nn.init.xavier_uniform_(m.weight)
+        m.bias.data.fill_(0.01)
+        
+        
+
+def train(n_epochs, optimizer, model, train_loader, loss_fn, scheduler, device, save_file=None, plot_file=None):
     print("training...")
     model.train()
     losses_train = []
@@ -67,24 +75,25 @@ def train(n_epochs, optimizer, model, loss_fn, train_loader, scheduler, device, 
 def main():
     model = SnoutNet()
     model.to(device=device)
+    model.apply(init_weights)
 
     train_transform = transforms.Compose([transforms.ToTensor()])
     test_transform = train_transform
 
-    train_dataset = SnoutNetDataset(imgs_dir='./oxford-iiit-pet-noses/images-original/images', annotations_file='./oxford-iiit-pet-noses/test_noses.txt', transform=train_transform)
+    train_dataset = SnoutNetDataset(imgs_dir='./oxford-iiit-pet-noses/images-original/images', annotations_file='./oxford-iiit-pet-noses/train_noses.txt', transform=train_transform)
     train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 
+    loss_fn = nn.MSELoss()
     optimizer = optim.Adam(model.parameters(), lr=1e-3, weight_decay=1e-5)
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min')
-    loss_fn = nn.MSELoss(size_average=None, reduce=None, reduction='mean')
 
     train(
         n_epochs=n_epochs,
         optimizer=optimizer,
         model=model,
-        loss_fn=loss_fn,
         train_loader=train_loader,
         scheduler=scheduler,
+        loss_fn = loss_fn,
         device=device,
         save_file=save_file,
         plot_file=plot_file)
