@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 from torchvision.datasets import MNIST
 from snoutnet_dataset import SnoutNetDataset
 from model import SnoutNet
-batch_size = 1
+batch_size = 32
 
 
 def main():
@@ -20,15 +20,10 @@ def main():
     argParser = argparse.ArgumentParser()
     argParser.add_argument('-s', metavar='state', type=str,
                            help='parameter file (.pth)')
-    argParser.add_argument('-z', metavar='bottleneck size',
-                           type=int, help='int [32]')
     args = argParser.parse_args()
     save_file = None
     if args.s is not None:
         save_file = args.s
-    bottleneck_size = 0
-    if args.z is not None:
-        bottleneck_size = args.z
 
     # Select processing device (modified to support Vulkan).
     device = 'cpu'

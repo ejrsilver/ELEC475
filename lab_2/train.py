@@ -15,7 +15,7 @@ from snoutnet_dataset import SnoutNetDataset
 #   some default parameters, which can be overwritten by command line arguments
 save_file = 'weights.pth'
 n_epochs = 5
-batch_size = 1
+batch_size = 256
 plot_file = 'plot.png'
 device = 'cpu'
 

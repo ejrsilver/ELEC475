@@ -11,7 +11,6 @@ class SnoutNet(nn.Module):
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=4)
         #input is three channels RBG, output is 64 channels, 3x3 kernel, need a stride of 4 to get 227x227 to 57x57 with padding 2 
         self.conv1 = nn.Conv2d(in_channels=3, out_channels=64, kernel_size=3, stride=1, padding=2)
-        self.maxpool = nn.MaxPool2d(kernel_size=3, stride=4)
         
         #stride of 4 to get from 57x57 to 15x15, but need padding of 2 for correct output size
         self.conv2 = nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3, stride=1, padding=2)
@@ -41,7 +40,7 @@ class SnoutNet(nn.Module):
         X = self.maxpool(X)
         X = F.relu(X)
 
-        X = X.view(1,4096)
+        X = X.view(-1,4096)
         
         X = self.fc1(X)
         X = F.relu(X)
