@@ -12,8 +12,9 @@ import matplotlib.pyplot as plt
 from torchvision.datasets import MNIST
 from snoutnet_dataset import SnoutNetDataset
 from model import SnoutNet
-batch_size = 32
-
+from PIL import Image, ImageDraw
+from torchvision import transforms
+batch_size = 698
 
 def main():
     # Parse command line arguments.
@@ -37,8 +38,7 @@ def main():
     ])
 
     test_dataset = SnoutNetDataset(imgs_dir='./oxford-iiit-pet-noses/images-original/images', annotations_file='./oxford-iiit-pet-noses/test_noses.txt', transform=test_transform)
-    test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
-   
+    test_loader = torch.utils.data.DataLoader(test_dataset, shuffle=True)
 
     model = SnoutNet()
 
@@ -47,6 +47,7 @@ def main():
 
     model.to(device)
     model.eval()
+
 
     #to hold euclidean distances for analysis
     euclidean_distances = []
@@ -59,17 +60,33 @@ def main():
             labels = labels.to(device=device)
 
             outputs = model(imgs)
-
-            for idx in range(len(labels)):
-                euclidean_distance = math.sqrt((outputs[idx][0] - labels[idx][0])**2 + (outputs[idx][1] - labels[idx][1])**2)
-                euclidean_distances.append(euclidean_distance)
-
+            euclidean_distance = math.sqrt((outputs[0][0] - labels[0][0])**2 + (outputs[0][1] - labels[0][1])**2)
+            euclidean_distances.append(euclidean_distance)
+        
         minimum = min(euclidean_distances)
         maximum = max(euclidean_distances)
         average = statistics.mean(euclidean_distances)
         std = torch.std(torch.tensor(euclidean_distances)).item()
 
         print("Min: ", minimum, " Max: ", maximum, " Mean: ", average, "Standard Deviation: ", std)
+
+    #test on an image with a given index
+    idx = 5
+    img, label = test_dataset.__getitem__(idx)
+    
+    #run through model to get prediction
+    with torch.no_grad():
+        prediction = model(img)[0]
+        x_prediction, y_prediction = prediction.tolist()
+    
+    transform_PIL = transforms.ToPILImage()
+    img = transform_PIL(img)
+    x, y = label.tolist()
+    
+    out_img = ImageDraw.Draw(img)
+    out_img.ellipse([(x - 3, y - 3), (x + 3, y + 3)], fill='green')
+    out_img.ellipse([(x_prediction - 3, y_prediction - 3), (x_prediction + 3, y_prediction + 3)], fill='red')
+    img.show()
 
         
     
