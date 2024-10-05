@@ -129,7 +129,11 @@ def main():
         train_dataset = torch.utils.data.ConcatDataset([normal_dataset, flip_dataset])
 
     elif augmentation == 'aug2':
-        pass
+        #greyscale images
+        normal_dataset = SnoutNetDataset(imgs_dir='./oxford-iiit-pet-noses/images-original/images', annotations_file='./oxford-iiit-pet-noses/train_noses.txt', transform=train_transform)
+        grey_transform = transforms.Compose([transforms.ToTensor(), transforms.Grayscale(num_output_channels=3)])
+        grey_dataset = SnoutNetDataset(imgs_dir='./oxford-iiit-pet-noses/images-original/images', annotations_file='./oxford-iiit-pet-noses/train_noses.txt', transform=grey_transform)
+        train_dataset = torch.utils.data.ConcatDataset([normal_dataset, grey_dataset])
 
     train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 
