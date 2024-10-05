@@ -21,6 +21,7 @@ def main():
     argParser = argparse.ArgumentParser()
     argParser.add_argument('-s', metavar='state', type=str,
                            help='parameter file (.pth)')
+    argParser.add_argument('-i', type=int, help='index to show test on')
     args = argParser.parse_args()
     save_file = None
     if args.s is not None:
@@ -71,28 +72,26 @@ def main():
         print("Min: ", minimum, " Max: ", maximum, " Mean: ", average, "Standard Deviation: ", std)
 
     #test on an image with a given index
-    idx = 5
-    img, label = test_dataset.__getitem__(idx)
-    
-    #run through model to get prediction
-    with torch.no_grad():
-        prediction = model(img)[0]
-        x_prediction, y_prediction = prediction.tolist()
-    
-    transform_PIL = transforms.ToPILImage()
-    img = transform_PIL(img)
-    x, y = label.tolist()
-    
-    out_img = ImageDraw.Draw(img)
-    out_img.ellipse([(x - 3, y - 3), (x + 3, y + 3)], fill='green')
-    out_img.ellipse([(x_prediction - 3, y_prediction - 3), (x_prediction + 3, y_prediction + 3)], fill='red')
-    img.show()
+    idx = None
+    if args.i is not None:
+        idx = args.i
+        img, label = test_dataset.__getitem__(idx)
+        
+        #run through model to get prediction
+        with torch.no_grad():
+            prediction = model(img)[0]
+            x_prediction, y_prediction = prediction.tolist()
+        
+        transform_PIL = transforms.ToPILImage()
+        img = transform_PIL(img)
+        x, y = label.tolist()
+        
+        out_img = ImageDraw.Draw(img)
+        out_img.ellipse([(x - 3, y - 3), (x + 3, y + 3)], fill='green')
+        out_img.ellipse([(x_prediction - 3, y_prediction - 3), (x_prediction + 3, y_prediction + 3)], fill='red')
+        img.show()
 
         
-    
-
-
-
 
 ###################################################################
 if __name__ == '__main__':

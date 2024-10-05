@@ -12,12 +12,26 @@ from torchsummary import summary
 from model import SnoutNet
 from snoutnet_dataset import SnoutNetDataset
 
+def flip_coordinates(coord):
+    x, y = coord.tolist()
+
+    #get the flipped version of x
+    if x > 113:
+        diff = x - 113
+        new_x = 113 - diff
+    else:
+        diff = 113 - x
+        new_x = 113 + x
+    
+    return torch.tensor([new_x, y])
+
 #   some default parameters, which can be overwritten by command line arguments
 save_file = 'weights.pth'
-n_epochs = 5
+n_epochs = 30
 batch_size = 256
 plot_file = 'plot.png'
 device = 'cpu'
+augmentation = 'just_data'
 
 
 def init_weights(m):
@@ -70,17 +84,53 @@ def train(n_epochs, optimizer, model, train_loader, loss_fn, scheduler, device, 
             plt.savefig(plot_file)
 
 
-
-
 def main():
+    argParser = argparse.ArgumentParser()
+    argParser.add_argument('-s', metavar='state', type=str,
+                           help='parameter file (.pth)')
+    argParser.add_argument('-z', metavar='bottleneck size',
+                           type=int, help='int [32]')
+    argParser.add_argument('-e', metavar='epochs',
+                           type=int, help='# of epochs [30]')
+    argParser.add_argument('-b', metavar='batch size',
+                           type=int, help='batch size [32]')
+    argParser.add_argument('-p', metavar='plot', type=str,
+                           help='output loss plot file (.png)')
+    argParser.add_argument('-a', metavar='augmentation', type=str,
+                           help='augmentation_type')
+
+    args = argParser.parse_args()
+
+    if args.s != None:
+        save_file = args.s
+    if args.e != None:
+        n_epochs = args.e
+    if args.b != None:
+        batch_size = args.b
+    if args.p != None:
+        plot_file = args.p
+    if args.a != None:
+        augmentation = args.a
+    
+    
     model = SnoutNet()
     model.to(device=device)
     model.apply(init_weights)
 
     train_transform = transforms.Compose([transforms.ToTensor()])
-    test_transform = train_transform
 
-    train_dataset = SnoutNetDataset(imgs_dir='./oxford-iiit-pet-noses/images-original/images', annotations_file='./oxford-iiit-pet-noses/train_noses.txt', transform=train_transform)
+    if augmentation == 'just_data':
+        train_dataset = SnoutNetDataset(imgs_dir='./oxford-iiit-pet-noses/images-original/images', annotations_file='./oxford-iiit-pet-noses/train_noses.txt', transform=train_transform)
+    elif augmentation == 'aug1':
+        #horizontal flip
+        normal_dataset = SnoutNetDataset(imgs_dir='./oxford-iiit-pet-noses/images-original/images', annotations_file='./oxford-iiit-pet-noses/train_noses.txt', transform=train_transform)
+        flip_transform = transforms.Compose([transforms.ToTensor(), transforms.RandomHorizontalFlip(p=1)])
+        flip_dataset = SnoutNetDataset(imgs_dir='./oxford-iiit-pet-noses/images-original/images', annotations_file='./oxford-iiit-pet-noses/train_noses.txt', transform=flip_transform, target_transform=flip_coordinates)
+        train_dataset = torch.utils.data.ConcatDataset([normal_dataset, flip_dataset])
+
+    elif augmentation == 'aug2':
+        pass
+
     train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 
     loss_fn = nn.MSELoss()

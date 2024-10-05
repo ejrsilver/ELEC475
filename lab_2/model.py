@@ -40,6 +40,7 @@ class SnoutNet(nn.Module):
         X = self.maxpool(X)
         X = F.relu(X)
 
+        # -1 to account for varying batch sizes. This also reshapes the data from the last convolutional layer
         X = X.view(-1,4096)
         
         X = self.fc1(X)
