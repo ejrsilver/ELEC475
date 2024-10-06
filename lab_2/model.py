@@ -9,8 +9,6 @@ class SnoutNet(nn.Module):
         #input is three channels RBG, output is 64 channels, 3x3 kernel, need a stride of 4 to get 227x227 to 57x57
         self.conv1 = nn.Conv2d(in_channels=3, out_channels=64, kernel_size=3, stride=1)
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=4)
-        #input is three channels RBG, output is 64 channels, 3x3 kernel, need a stride of 4 to get 227x227 to 57x57 with padding 2 
-        self.conv1 = nn.Conv2d(in_channels=3, out_channels=64, kernel_size=3, stride=1, padding=2)
         
         #stride of 4 to get from 57x57 to 15x15, but need padding of 2 for correct output size
         self.conv2 = nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3, stride=1, padding=2)

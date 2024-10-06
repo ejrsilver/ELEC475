@@ -135,6 +135,14 @@ def main():
         grey_dataset = SnoutNetDataset(imgs_dir='./oxford-iiit-pet-noses/images-original/images', annotations_file='./oxford-iiit-pet-noses/train_noses.txt', transform=grey_transform)
         train_dataset = torch.utils.data.ConcatDataset([normal_dataset, grey_dataset])
 
+    elif augmentation == "aug12":
+        #horizontal flip and greyscale
+        normal_dataset = SnoutNetDataset(imgs_dir='./oxford-iiit-pet-noses/images-original/images', annotations_file='./oxford-iiit-pet-noses/train_noses.txt', transform=train_transform)
+        flip_grey_transform = transforms.Compose([transforms.ToTensor(), transforms.RandomHorizontalFlip(p=1), transforms.Grayscale(num_output_channels=3)])
+        flip_grey_dataset = SnoutNetDataset(imgs_dir='./oxford-iiit-pet-noses/images-original/images', annotations_file='./oxford-iiit-pet-noses/train_noses.txt', transform=flip_grey_transform, target_transform=flip_coordinates)
+        train_dataset = torch.utils.data.ConcatDataset([normal_dataset, flip_grey_dataset])
+
+
     train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 
     loss_fn = nn.MSELoss()
