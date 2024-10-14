@@ -41,10 +41,11 @@ def init_weights(m):
         
         
 
-def train(n_epochs, optimizer, model, train_loader, loss_fn, scheduler, device, save_file=None, plot_file=None):
+def train(n_epochs, optimizer, model, train_loader, test_loader, loss_fn, scheduler, device, save_file=None, plot_file=None):
     print("training...")
     model.train()
     losses_train = []
+    losses_test = []
 
     for epoch in range(n_epochs):
         print("epoch: ", epoch)
@@ -67,16 +68,34 @@ def train(n_epochs, optimizer, model, train_loader, loss_fn, scheduler, device, 
         scheduler.step(loss_train)
         losses_train += [loss_train/len(train_loader)]
 
-        print('{} Epoch {}, Training loss {}'.format(
-            datetime.datetime.now(), epoch, loss_train/len(train_loader)))
+        print('{} Epoch {}, Training loss {}'.format(datetime.datetime.now(), epoch, loss_train/len(train_loader)))
 
         if save_file != None:
             torch.save(model.state_dict(), save_file)
+
+
+        #validate the model 
+        model.eval()
+        loss_test = 0.0
+        for data in test_loader:
+            imgs = data[0]
+            labels = data[1]
+
+            imgs = imgs.to(device=device)
+            labels = labels.to(device=device)
+
+            outputs = model(imgs)
+            loss = loss_fn(outputs.float(), labels.float())
+            loss_test += loss.item()
+        
+        losses_test += [loss_test/len(test_loader)]
+        print('{} Epoch {}, Validation loss {}'.format(datetime.datetime.now(), epoch, loss_test/len(test_loader)))
 
         if plot_file != None:
             plt.figure(2, figsize=(12, 7))
             plt.clf()
             plt.plot(losses_train, label='train')
+            plt.plot(losses_test, label='validation')
             plt.xlabel('epoch')
             plt.ylabel('loss')
             plt.legend(loc=1)
@@ -118,6 +137,7 @@ def main():
     model.apply(init_weights)
 
     train_transform = transforms.Compose([transforms.ToTensor()])
+    test_transform = transforms.Compose([transforms.ToTensor()])
 
     if augmentation == 'just_data':
         train_dataset = SnoutNetDataset(imgs_dir='./oxford-iiit-pet-noses/images-original/images', annotations_file='./oxford-iiit-pet-noses/train_noses.txt', transform=train_transform)
@@ -145,6 +165,9 @@ def main():
 
     train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 
+    test_dataset = SnoutNetDataset(imgs_dir='./oxford-iiit-pet-noses/images-original/images', annotations_file='./oxford-iiit-pet-noses/test_noses.txt', transform=test_transform)
+    test_loader = torch.utils.data.DataLoader(test_dataset, shuffle=True)
+
     loss_fn = nn.MSELoss()
     optimizer = optim.Adam(model.parameters(), lr=1e-3, weight_decay=1e-5)
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min')
@@ -154,6 +177,7 @@ def main():
         optimizer=optimizer,
         model=model,
         train_loader=train_loader,
+        test_loader=test_loader,
         scheduler=scheduler,
         loss_fn = loss_fn,
         device=device,
